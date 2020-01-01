@@ -310,7 +310,6 @@ def game_over(score, high_score):
         game_display.blit(test_text, (get_x_center(test_text), 100))
         game_display.blit(high_score_text, (get_x_center(high_score_text), 180))
         game_display.blit(score_text, (get_x_center(score_text), 229))
-        print(high_score_text.get_size())
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -381,6 +380,9 @@ def game_loop():
                 balloons_speed[i] = random.randint(BALLOON_MAX_SPEED, BALLOON_MIN_SPEED)
 
         if time_left < 0:
+            if score > high_score:
+                high_score = score
+                save_high_score(score)
             game_over(score, high_score)
             break
         show_time(time_left)
