@@ -50,6 +50,7 @@ BALLOON_X_LOWERBOUND = -32
 BALLOON_Y_UPPERBOUND = DISPLAY_HEIGHT + 300
 BALLOON_Y_LOWERBOUND = DISPLAY_HEIGHT + 33
 FPS = 60
+TIME_LIMIT = 5
 
 # Global values
 pause = False
@@ -246,10 +247,13 @@ def game_intro():
 # Shows the game settings screen
 def game_settings():
     global volume_val
+    pygame.mixer.music.load('background.mp3')
+    pygame.mixer.music.play(-1)
     rectangle = pygame.rect.Rect(((400 * volume_val) + 190), 341.5, 20, 20)
     drag = False
     offset_x = 0
     while True:
+        pygame.mixer.music.set_volume(volume_val)
         game_display.blit(background_img, (0, 0))
 
         for event in pygame.event.get():
@@ -290,13 +294,43 @@ def game_settings():
         clock.tick(FPS)
 
 
+def show_time(seconds):
+    time_text = medium_font.render("Time: " + str(seconds), True, WHITE)
+    game_display.blit(time_text, (get_x_center(time_text), 0))
+
+
+def game_over(score, high_score):
+    pygame.mouse.set_visible(True)
+    while True:
+        game_display.blit(background_img, (0, 0))
+
+        test_text = large_font.render("GAME OVER", True, WHITE)
+        score_text = medium_font.render("Your Score: " + str(score), True, WHITE)
+        high_score_text = medium_font.render("High Score: " + str(high_score), True, WHITE)
+        game_display.blit(test_text, (get_x_center(test_text), 100))
+        game_display.blit(high_score_text, (get_x_center(high_score_text), 180))
+        game_display.blit(score_text, (get_x_center(score_text), 229))
+        print(high_score_text.get_size())
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    game_loop()
+
+        button("Retry", 330, 300, 140, 70, GREEN, BRIGHT_GREEN, game_loop)
+        button("Exit", 330, 400, 140, 70, RED, BRIGHT_RED, game_exit)
+
+        pygame.display.update()
+        clock.tick(60)
+
+
 # Runs the game
 def game_loop():
+    start_ticks = pygame.time.get_ticks()
     global pause
     pause = False
-    pygame.mixer.music.load('background.mp3')
-    pygame.mixer.music.set_volume(volume_val)
-    pygame.mixer.music.play(-1)
 
     # Create multiple balloons
     balloons_x = []
@@ -310,6 +344,8 @@ def game_loop():
     score = 0
     high_score = get_high_score()
     while True:
+        seconds = (pygame.time.get_ticks() - start_ticks) / 1000
+        time_left = TIME_LIMIT - int(seconds)
         game_display.blit(background_img, (0, 0))
         pygame.mixer.music.set_volume(volume_val)
         for event in pygame.event.get():
@@ -344,6 +380,10 @@ def game_loop():
                 balloons_y[i] = random.randint(BALLOON_Y_LOWERBOUND, BALLOON_Y_UPPERBOUND)
                 balloons_speed[i] = random.randint(BALLOON_MAX_SPEED, BALLOON_MIN_SPEED)
 
+        if time_left < 0:
+            game_over(score, high_score)
+            break
+        show_time(time_left)
         show_score(score, high_score)
         game_cursor()
         pygame.display.update()
