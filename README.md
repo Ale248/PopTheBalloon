@@ -2,7 +2,7 @@
 
 This is a game where you pop as many balloon as possible in 30 seconds.
 
-![] (Demo.gif)
+![](Demo.gif)
 
 ## Installation
 
